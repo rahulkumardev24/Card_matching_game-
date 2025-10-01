@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:card_match_memory/widgets/game_box_card.dart';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/level_generator.dart';
-import '../widgets/card_widget.dart';
-import '../widgets/game_stats.dart';
-import 'models/game_models.dart';
-import 'models/star_rating.dart';
+import '../../utils/level_generator.dart';
+import '../../widgets/game_stats.dart';
+import '../models/game_models.dart';
+import '../widgets/game_result_dialog.dart';
 
 class GameScreen extends StatefulWidget {
   final GameLevel level;
@@ -61,7 +61,7 @@ class _GameScreenState extends State<GameScreen> {
           (index) => CardItem(
         id: index,
         imagePath: cardImages[index],
-        isFlipped: true, // Start with all cards flipped for preview
+        isFlipped: true,
       ),
     );
   }
@@ -301,6 +301,7 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      /// ------- App bar ------ ///
       appBar: AppBar(
         title: Text('Level ${widget.level.level} - ${widget.level.difficulty}'),
         actions: [
@@ -325,7 +326,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
             child: Column(
               children: [
-                // Game Stats
+                /// Game Stats
                 GameStatsWidget(
                   moves: moves,
                   matches: matches,
@@ -339,7 +340,7 @@ class _GameScreenState extends State<GameScreen> {
                     margin: const EdgeInsets.symmetric(vertical: 10),
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.orange),
                     ),
@@ -360,7 +361,7 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                 ],
 
-                // Cards Grid
+                /// ------- Cards Grid ---- ///
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -372,7 +373,7 @@ class _GameScreenState extends State<GameScreen> {
                         childAspectRatio: 0.8,
                       ),
                       itemCount: cards.length,
-                      itemBuilder: (context, index) => CardWidget(
+                      itemBuilder: (context, index) => GameBoxCard(
                         card: cards[index],
                         onTap: () => onCardTap(index),
                         isPreviewMode: isPreviewMode,
@@ -384,152 +385,9 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
 
-          // Confetti
-          ConfettiWidget(
-            confettiController: confettiController,
-            blastDirectionality: BlastDirectionality.explosive,
-            shouldLoop: false,
-            colors: const [
-              Colors.green,
-              Colors.blue,
-              Colors.pink,
-              Colors.orange,
-              Colors.purple,
-            ],
-          ),
         ],
       ),
     );
   }
 }
 
-class GameResultDialog extends StatelessWidget {
-  final bool isWin;
-  final GameLevel level;
-  final int moves;
-  final int timeElapsed;
-  final int stars;
-  final VoidCallback? onNextLevel;
-  final VoidCallback onRetry;
-  final VoidCallback onLevelSelect;
-
-  const GameResultDialog({
-    super.key,
-    required this.isWin,
-    required this.level,
-    required this.moves,
-    required this.timeElapsed,
-    required this.stars,
-    this.onNextLevel,
-    required this.onRetry,
-    required this.onLevelSelect,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isWin ? Icons.celebration : Icons.timer_off,
-              size: 64,
-              color: isWin ? Colors.green : Colors.orange,
-            ),
-
-            const SizedBox(height: 16),
-
-            Text(
-              isWin ? '🎉 Level Completed! 🎉' : 'Time\'s Up!',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 16),
-
-            if (isWin) StarRating(stars: stars),
-
-            if (isWin) const SizedBox(height: 16),
-
-            // Performance Stats
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  _buildStatRow('Level', '${level.level} (${level.difficulty})'),
-                  _buildStatRow('Time', '$timeElapsed/${level.timeLimit}s'),
-                  _buildStatRow('Moves', '$moves/${level.maxMoves}'),
-                  if (isWin) _buildStatRow('Stars', '$stars/3'),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: onLevelSelect,
-                    child: const Text('Levels'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: onRetry,
-                    child: const Text('Retry'),
-                  ),
-                ),
-                if (onNextLevel != null) ...[
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: onNextLevel,
-                      child: const Text('Next Level'),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

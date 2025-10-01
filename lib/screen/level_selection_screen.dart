@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/level_generator.dart';
-import '../widgets/level_card.dart';
+import '../../utils/level_generator.dart';
+import '../../widgets/level_card.dart';
 import 'game_screen.dart';
-import 'models/game_models.dart';
+import '../models/game_models.dart';
 
 class LevelSelectionScreen extends StatefulWidget {
-  const LevelSelectionScreen({super.key}); // No levels parameter needed
+  const LevelSelectionScreen({super.key});
 
   @override
   State<LevelSelectionScreen> createState() => _LevelSelectionScreenState();
@@ -34,7 +34,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
       } else {
         // Initialize with level 1 unlocked
         levelsProgress = {
-          '1': {'stars': 0, 'completed': false, 'unlocked': true}
+          '1': {'stars': 0, 'completed': false, 'unlocked': true},
         };
       }
     });
@@ -42,7 +42,8 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
 
   bool isLevelUnlocked(int levelNumber) {
     final levelData = levelsProgress[levelNumber.toString()];
-    return levelData != null && (levelData['unlocked'] == true || levelData['completed'] == true);
+    return levelData != null &&
+        (levelData['unlocked'] == true || levelData['completed'] == true);
   }
 
   int getStarsEarned(int levelNumber) {
@@ -60,6 +61,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      /// --- app bar --- ///
       appBar: AppBar(
         title: const Text('Select Level'),
         centerTitle: true,
@@ -71,20 +73,19 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
           ),
         ],
       ),
+
+      /// ------- Body ------- ///
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.blue.shade50,
-              Colors.purple.shade50,
-            ],
+            colors: [Colors.blue.shade50, Colors.purple.shade50],
           ),
         ),
         child: Column(
           children: [
-            // Progress Summary
+            /// level and star
             Container(
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(16),
@@ -93,7 +94,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -102,18 +103,21 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildProgressItem('Levels', '${_getCompletedLevelsCount()}/100'),
+                  _buildProgressItem(
+                    'Levels',
+                    '${_getCompletedLevelsCount()}/100',
+                  ),
                   _buildProgressItem('Total Stars', '${_getTotalStars()}/300'),
                 ],
               ),
             ),
 
-            // Levels Grid
+            /// ------- Levels Grid (Level) ------ ///
             Expanded(
               child: GridView.builder(
                 padding: const EdgeInsets.all(16),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
+                  crossAxisCount: 3,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                   childAspectRatio: 0.8,
@@ -123,22 +127,23 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
                   final level = levels[index];
                   final isUnlocked = isLevelUnlocked(level.level);
                   final starsEarned = getStarsEarned(level.level);
-
                   return LevelCard(
                     level: level,
                     isUnlocked: isUnlocked,
                     starsEarned: starsEarned,
-                    onTap: isUnlocked ? () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GameScreen(
-                            level: level,
-                            onLevelComplete: refreshLevels,
-                          ),
-                        ),
-                      );
-                    } : null,
+                    onTap: isUnlocked
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => GameScreen(
+                                  level: level,
+                                  onLevelComplete: refreshLevels,
+                                ),
+                              ),
+                            );
+                          }
+                        : null,
                   );
                 },
               ),

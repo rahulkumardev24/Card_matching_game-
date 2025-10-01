@@ -1,8 +1,8 @@
 import 'package:card_match_memory/helper/app_color.dart';
-import 'package:card_match_memory/setting_screen.dart';
+import 'package:card_match_memory/screen/setting_screen.dart';
 import 'package:card_match_memory/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
-import 'helper/responsive_helper.dart';
+import '../helper/responsive_helper.dart';
 import 'level_selection_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,7 +13,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,7 +21,10 @@ class _HomeScreenState extends State<HomeScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColor.primaryColor.withValues(alpha: 0.7),AppColor.secondaryColor],
+            colors: [
+              AppColor.primaryColor.withValues(alpha: 0.7),
+              AppColor.secondaryColor,
+            ],
           ),
         ),
         child: Column(
@@ -36,8 +38,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Spacer(flex: 2),
+
                     /// Image
-                    Image.asset("assets/image/idea.png" , height: ResponsiveHelper.screenHeight(context) * 0.2 ,) ,
+                    Image.asset(
+                      "assets/image/idea.png",
+                      height: ResponsiveHelper.screenHeight(context) * 0.2,
+                    ),
 
                     const SizedBox(height: 20),
                     Text(

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../models/game_models.dart';
 
-class CardWidget extends StatelessWidget {
+class GameBoxCard extends StatelessWidget {
   final CardItem card;
   final VoidCallback onTap;
   final bool isPreviewMode;
 
-  const CardWidget({
+  const GameBoxCard({
     super.key,
     required this.card,
     required this.onTap,
@@ -28,7 +28,7 @@ class CardWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),
@@ -49,7 +49,7 @@ class CardWidget extends StatelessWidget {
             )
                 : Icon(
               Icons.question_mark,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               size: 30,
             ),
           ),

@@ -37,9 +37,7 @@ class LevelCard extends StatelessWidget {
       onTap: onTap,
       child: Card(
         elevation: isUnlocked ? 4 : 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
           decoration: BoxDecoration(
             gradient: isUnlocked
@@ -47,27 +45,29 @@ class LevelCard extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                getDifficultyColor().withOpacity(0.1),
-                getDifficultyColor().withOpacity(0.3),
+                getDifficultyColor().withValues(alpha: 0.1),
+                getDifficultyColor().withValues(alpha: 0.3),
               ],
             )
                 : LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Colors.grey.shade300,
-                Colors.grey.shade400,
-              ],
+              colors: [Colors.grey.shade300, Colors.grey.shade400],
             ),
             borderRadius: BorderRadius.circular(12),
             border: isUnlocked
-                ? Border.all(color: getDifficultyColor().withOpacity(0.5), width: 2)
+                ? Border.all(
+              color: getDifficultyColor().withValues(alpha: 0.5),
+              width: 2,
+            )
                 : null,
           ),
           child: Stack(
+            alignment: Alignment.center,
             children: [
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     '${level.level}',
@@ -95,28 +95,28 @@ class LevelCard extends StatelessWidget {
                     ),
                   ),
 
-                  if (starsEarned > 0) ...[
-                    const SizedBox(height: 8),
-                    StarRating(stars: starsEarned, size: 14),
-                  ],
+                  // Show stars for both unlocked and locked levels
+                  const SizedBox(height: 8),
+                  StarRating(
+                    stars: starsEarned,
+                    size: 14,
+                    // If level is locked, show 0 stars (empty stars)
+                    // The StarRating widget should handle showing empty stars when stars = 0
+                  ),
                 ],
               ),
 
               if (!isUnlocked)
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
+                    color: Colors.black.withValues(alpha: 0.7),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.lock,
-                          color: Colors.white,
-                          size: 24,
-                        ),
+                        Icon(Icons.lock, color: Colors.white, size: 24),
                         const SizedBox(height: 4),
                         Text(
                           'Complete\nLevel ${level.level - 1}',
