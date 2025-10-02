@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'package:card_match_memory/helper/app_text_styles.dart';
+import 'package:card_match_memory/widgets/navigation_button.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../utils/level_generator.dart';
 import '../../widgets/level_card.dart';
 import '../helper/app_color.dart';
+import '../widgets/level_and_star_card.dart';
 import 'game_screen.dart';
 import '../models/game_models.dart';
 
@@ -21,7 +24,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
   @override
   void initState() {
     super.initState();
-    levels = LevelGenerator.generateLevels(); // Generate levels internally
+    levels = LevelGenerator.generateLevels();
     loadLevelsProgress();
   }
 
@@ -59,20 +62,51 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     loadLevelsProgress();
   }
 
+  int getCompletedLevelsCount() {
+    return levelsProgress.values.where((level) {
+      final completed = level['completed'];
+      return completed == true;
+    }).length;
+  }
+
+  // Calculate total stars earned
+  int getTotalStars() {
+    int total = 0;
+    levelsProgress.forEach((key, value) {
+      if (value['stars'] != null) {
+        total += (value['stars'] as num).toInt();
+      }
+    });
+    return total;
+  }
+
+  int getMaxStars() {
+    return levels.length * 3;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final completedLevels = getCompletedLevelsCount();
+    final totalStars = getTotalStars();
+    final maxStars = getMaxStars();
+
     return Scaffold(
       /// --- app bar --- ///
       appBar: AppBar(
-        title: const Text('Select Level'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: refreshLevels,
-            tooltip: 'Refresh Progress',
+        leading: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: NavigationButton(
+            onTap: () {
+              Navigator.pop(context);
+            },
           ),
-        ],
+        ),
+        title: Text(
+          'Select Level',
+          style: AppTextStyle.titleSmall(fontFamily: "secondary"),
+        ),
+        centerTitle: true,
+        backgroundColor: AppColor.secondaryColor,
       ),
 
       /// ------- Body ------- ///
@@ -82,38 +116,19 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColor.primaryColor.withValues(alpha: 0.9),
-              AppColor.secondaryColor.withValues(alpha: 0.9),
+              AppColor.primaryColor.withOpacity(0.9),
+              AppColor.secondaryColor.withOpacity(0.9),
             ],
           ),
         ),
         child: Column(
           children: [
-            /// level and star
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildProgressItem(
-                    'Levels',
-                    '${_getCompletedLevelsCount()}/100',
-                  ),
-                  _buildProgressItem('Total Stars', '${_getTotalStars()}/300'),
-                ],
-              ),
+            /// level and star card with REAL data
+            LevelAndStarCard(
+              completedLevels: completedLevels,
+              totalLevels: levels.length,
+              totalStars: totalStars,
+              maxStars: maxStars,
             ),
 
             /// ------- Levels Grid (Level) ------ ///
@@ -156,46 +171,5 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
         ),
       ),
     );
-  }
-
-  Widget _buildProgressItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.grey,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.blue,
-          ),
-        ),
-      ],
-    );
-  }
-
-  int _getCompletedLevelsCount() {
-    return levelsProgress.values.where((level) {
-      final completed = level['completed'];
-      return completed == true;
-    }).length;
-  }
-
-  int _getTotalStars() {
-    int total = 0;
-    levelsProgress.forEach((key, value) {
-      if (value['stars'] != null) {
-        total += (value['stars'] as num).toInt();
-      }
-    });
-    return total;
   }
 }
