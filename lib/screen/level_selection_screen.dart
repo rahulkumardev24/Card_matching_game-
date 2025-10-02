@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../utils/level_generator.dart';
 import '../../widgets/level_card.dart';
+import '../helper/app_color.dart';
 import 'game_screen.dart';
 import '../models/game_models.dart';
 
@@ -80,7 +81,10 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.blue.shade50, Colors.purple.shade50],
+            colors: [
+              AppColor.primaryColor.withValues(alpha: 0.9),
+              AppColor.secondaryColor.withValues(alpha: 0.9),
+            ],
           ),
         ),
         child: Column(
