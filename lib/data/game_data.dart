@@ -1,78 +1,78 @@
-import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
+// game_models.dart
+import 'database_helper.dart';
 
 class GameData {
   static const String _levelsKey = 'saved_levels_progress';
   static const String _currentLevelKey = 'current_level';
 
-  // Save level progress
+  // These methods will be updated to use SQLite
   static Future<void> saveLevelProgress(int level, int stars) async {
-    final prefs = await SharedPreferences.getInstance();
+    final dbHelper = DatabaseHelper();
 
-    // Get current saved progress
-    final String? savedData = prefs.getString(_levelsKey);
-    Map<String, dynamic> levelsProgress = {};
+    // Save current level progress
+    await dbHelper.saveLevelProgress(
+      level: level,
+      stars: stars,
+      completed: true,
+      unlocked: true,
+      completedAt: DateTime.now().toIso8601String(),
+    );
 
-    if (savedData != null) {
-      levelsProgress = Map<String, dynamic>.from(json.decode(savedData));
-    }
-
-    // Update progress for this level
-    levelsProgress[level.toString()] = {
-      'stars': stars,
-      'completed': true,
-      'completedAt': DateTime.now().toIso8601String(),
-    };
-
-    // Save updated progress
-    await prefs.setString(_levelsKey, json.encode(levelsProgress));
-
-    // Unlock next level if it exists
+    // Unlock next level
     final nextLevel = level + 1;
-    if (!levelsProgress.containsKey(nextLevel.toString())) {
-      levelsProgress[nextLevel.toString()] = {
-        'stars': 0,
-        'completed': false,
-        'unlocked': true,
-      };
+    final nextLevelProgress = await dbHelper.getLevelProgress(nextLevel);
+    if (nextLevelProgress == null) {
+      await dbHelper.saveLevelProgress(
+        level: nextLevel,
+        stars: 0,
+        completed: false,
+        unlocked: true,
+      );
     }
-
-    await prefs.setString(_levelsKey, json.encode(levelsProgress));
   }
 
-  // Get level progress
   static Future<Map<String, dynamic>> getLevelProgress(int level) async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? savedData = prefs.getString(_levelsKey);
+    final dbHelper = DatabaseHelper();
+    final progress = await dbHelper.getLevelProgress(level);
 
-    if (savedData != null) {
-      final Map<String, dynamic> levelsProgress = Map<String, dynamic>.from(json.decode(savedData));
-      return levelsProgress[level.toString()] ?? {'stars': 0, 'completed': false, 'unlocked': level == 1};
+    if (progress != null) {
+      return progress;
     }
 
     // First level is always unlocked
-    return {'stars': 0, 'completed': false, 'unlocked': level == 1};
-  }
-
-  // Get all levels progress
-  static Future<Map<String, dynamic>> getAllLevelsProgress() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? savedData = prefs.getString(_levelsKey);
-
-    if (savedData != null) {
-      return Map<String, dynamic>.from(json.decode(savedData));
-    }
-
-    // Initialize with level 1 unlocked
     return {
-      '1': {'stars': 0, 'completed': false, 'unlocked': true}
+      'stars': 0,
+      'completed': false,
+      'unlocked': level == 1,
+      'moves': 0,
+      'time': 0,
+      'completedAt': null,
     };
   }
 
-  // Reset all progress
+  static Future<Map<String, dynamic>> getAllLevelsProgress() async {
+    final dbHelper = DatabaseHelper();
+    final progress = await dbHelper.getAllLevelsProgress();
+
+    if (progress.isNotEmpty) {
+      return progress;
+    }
+
+    // Initialize with level 1 unlocked
+    await dbHelper.saveLevelProgress(
+      level: 1,
+      stars: 0,
+      completed: false,
+      unlocked: true,
+    );
+
+    return {
+      '1': {'stars': 0, 'completed': false, 'unlocked': true},
+    };
+  }
+
   static Future<void> resetAllProgress() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_levelsKey);
+    final dbHelper = DatabaseHelper();
+    await dbHelper.resetAllProgress();
   }
 }

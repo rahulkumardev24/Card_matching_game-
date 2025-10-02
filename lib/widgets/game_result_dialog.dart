@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/game_models.dart';
-import '../models/star_rating.dart';
+import 'star_rating.dart';
 
 class GameResultDialog extends StatelessWidget {
   final bool isWin;

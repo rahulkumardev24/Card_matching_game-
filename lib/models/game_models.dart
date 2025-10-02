@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class GameLevel {
   final int level;
   final int gridSize;
@@ -14,32 +16,29 @@ class GameLevel {
     required this.maxMoves,
     required this.difficulty,
   });
-}
 
-class GameStats {
-  int moves;
-  int matches;
-  int timeElapsed;
-  bool isCompleted;
+  Map<String, dynamic> toMap() {
+    return {
+      'level': level,
+      'gridSize': gridSize,
+      'totalPairs': totalPairs,
+      'timeLimit': timeLimit,
+      'maxMoves': maxMoves,
+      'difficulty': difficulty,
+    };
+  }
 
-  GameStats({
-    this.moves = 0,
-    this.matches = 0,
-    this.timeElapsed = 0,
-    this.isCompleted = false,
-  });
-}
+  factory GameLevel.fromMap(Map<String, dynamic> map) {
+    return GameLevel(
+      level: map['level'],
+      gridSize: map['gridSize'],
+      totalPairs: map['totalPairs'],
+      timeLimit: map['timeLimit'],
+      maxMoves: map['maxMoves'],
+      difficulty: map['difficulty'],
+    );
+  }
 
-class CardItem {
-  final int id;
-  final String imagePath;
-  bool isFlipped;
-  bool isMatched;
-
-  CardItem({
-    required this.id,
-    required this.imagePath,
-    this.isFlipped = false,
-    this.isMatched = false,
-  });
+  String toJson() => json.encode(toMap());
+  factory GameLevel.fromJson(String source) => GameLevel.fromMap(json.decode(source));
 }

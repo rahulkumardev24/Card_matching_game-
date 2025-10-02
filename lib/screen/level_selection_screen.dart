@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../utils/level_generator.dart';
 import '../../widgets/level_card.dart';
+import '../data/database_helper.dart';
 import '../helper/app_color.dart';
 import '../widgets/level_and_star_card.dart';
 import 'game_screen.dart';
@@ -28,21 +29,55 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     loadLevelsProgress();
   }
 
+  // In LevelSelectionScreen class
   Future<void> loadLevelsProgress() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? savedData = prefs.getString('levels_progress');
+    final dbHelper = DatabaseHelper();
+    final progress = await dbHelper.getAllLevelsProgress();
 
     setState(() {
-      if (savedData != null) {
-        levelsProgress = Map<String, dynamic>.from(json.decode(savedData));
-      } else {
-        // Initialize with level 1 unlocked
+      levelsProgress = progress;
+
+      // Ensure level 1 is always unlocked if no progress exists
+      if (levelsProgress.isEmpty || !levelsProgress.containsKey('1')) {
         levelsProgress = {
           '1': {'stars': 0, 'completed': false, 'unlocked': true},
         };
       }
     });
   }
+
+// 🔧 DEBUG METHOD: Unlock all levels
+  Future<void> unlockAllLevels() async {
+    final dbHelper = DatabaseHelper();
+    await dbHelper.unlockAllLevels();
+    loadLevelsProgress(); // Refresh the state
+
+    // Show confirmation
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'All levels unlocked!',
+          style: AppTextStyle.subtitleMedium(),
+        ),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+// 🔧 DEBUG METHOD: Reset all progress
+  Future<void> resetAllProgress() async {
+    final dbHelper = DatabaseHelper();
+    await dbHelper.resetAllProgress();
+    loadLevelsProgress(); // Refresh the state
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Progress reset!', style: AppTextStyle.subtitleMedium()),
+        backgroundColor: Colors.orange,
+      ),
+    );
+  }
+
 
   bool isLevelUnlocked(int levelNumber) {
     final levelData = levelsProgress[levelNumber.toString()];
@@ -69,7 +104,6 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     }).length;
   }
 
-  // Calculate total stars earned
   int getTotalStars() {
     int total = 0;
     levelsProgress.forEach((key, value) {
@@ -91,7 +125,6 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     final maxStars = getMaxStars();
 
     return Scaffold(
-      /// --- app bar --- ///
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.all(5.0),
@@ -107,9 +140,42 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
         ),
         centerTitle: true,
         backgroundColor: AppColor.secondaryColor,
+        actions: [
+          // Debug menu for testing
+          PopupMenuButton<String>(
+            icon: Icon(Icons.bug_report, color: Colors.white),
+            onSelected: (value) {
+              if (value == 'unlock_all') {
+                unlockAllLevels();
+              } else if (value == 'reset_all') {
+                resetAllProgress();
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem<String>(
+                value: 'unlock_all',
+                child: Row(
+                  children: [
+                    Icon(Icons.lock_open, color: Colors.green),
+                    SizedBox(width: 8),
+                    Text('Unlock All Levels'),
+                  ],
+                ),
+              ),
+              PopupMenuItem<String>(
+                value: 'reset_all',
+                child: Row(
+                  children: [
+                    Icon(Icons.restart_alt, color: Colors.orange),
+                    SizedBox(width: 8),
+                    Text('Reset All Progress'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-
-      /// ------- Body ------- ///
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -123,15 +189,12 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
         ),
         child: Column(
           children: [
-            /// level and star card with REAL data
             LevelAndStarCard(
               completedLevels: completedLevels,
               totalLevels: levels.length,
               totalStars: totalStars,
               maxStars: maxStars,
             ),
-
-            /// ------- Levels Grid (Level) ------ ///
             Expanded(
               child: GridView.builder(
                 padding: const EdgeInsets.all(16),

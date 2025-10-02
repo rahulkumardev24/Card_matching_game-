@@ -5,7 +5,7 @@ import 'package:clay_containers/widgets/clay_container.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import '../models/game_models.dart';
-import '../models/star_rating.dart';
+import 'star_rating.dart';
 
 class LevelCard extends StatelessWidget {
   final GameLevel level;

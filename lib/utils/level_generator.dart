@@ -1,20 +1,23 @@
+import 'package:card_match_memory/helper/app_constant.dart';
+
 import '../models/game_models.dart';
 
 class LevelGenerator {
   static List<GameLevel> generateLevels() {
     List<GameLevel> levels = [];
 
+    /// Generate 100 level
     for (int i = 1; i <= 100; i++) {
       String difficulty;
       int gridSize;
       int timeLimit;
       int maxMoves;
 
-      if (i <= 20) {
-        // Easy levels
+      if (i <= 10) {
+        /// --- Easy levels ---- ///
         difficulty = 'Easy';
-        gridSize = i <= 10 ? 2 : 3;
-        timeLimit = 60 + (i * 5);
+        gridSize = i <= 3 ? 2 : 3;
+        timeLimit = 20 + (i * 5);
         maxMoves = (gridSize * gridSize) + 5;
       } else if (i <= 50) {
         // Medium levels
@@ -56,53 +59,8 @@ class LevelGenerator {
   static List<String> generateCardImages(int pairs) {
     List<String> images = [];
 
-    // In a real app, you would have actual image assets
-    // For demo, we'll use emojis or generate colors
-    List<String> emojis = [
-      '🎮',
-      '🌟',
-      '🎯',
-      '🎨',
-      '🚀',
-      '🎪',
-      '🎭',
-      '🎼',
-      '🎸',
-      '🏆',
-      '⚽',
-      '🏀',
-      '🎾',
-      '⚾',
-      '🎳',
-      '🏓',
-      '🏸',
-      '🎿',
-      '⛷️',
-      '🏂',
-      '🏄',
-      '🚴',
-      '🎭',
-      '🎪',
-      '🎡',
-      '🎢',
-      '🚂',
-      '✈️',
-      '🚁',
-      '🚀',
-      '🛸',
-      '🔮',
-      '🎁',
-      '🎉',
-      '🎊',
-      '🎂',
-      '🍎',
-      '🍕',
-      '🚗',
-      '🏠',
-    ];
-
     for (int i = 0; i < pairs; i++) {
-      String emoji = emojis[i % emojis.length];
+      String emoji = AppConstant.emojis[i % AppConstant.emojis.length];
       images.add(emoji);
       images.add(emoji); // Add pair
     }

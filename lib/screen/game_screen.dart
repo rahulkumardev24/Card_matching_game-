@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:card_match_memory/widgets/game_box_card.dart';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../utils/level_generator.dart';
 import '../../widgets/game_stats.dart';
+import '../data/database_helper.dart';
+import '../models/card_item.dart';
 import '../models/game_models.dart';
 import '../widgets/game_result_dialog.dart';
 
@@ -32,10 +32,11 @@ class _GameScreenState extends State<GameScreen> {
   int timeElapsed = 0;
   bool isGameOver = false;
   bool isPreviewMode = true;
-  late Timer gameTimer;
-  late Timer previewTimer;
+  Timer? gameTimer;
+  Timer? previewTimer;
   late ConfettiController confettiController;
   int starsEarned = 0;
+  bool _isDisposed = false;
 
   @override
   void initState() {
@@ -47,8 +48,9 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void dispose() {
-    gameTimer.cancel();
-    previewTimer.cancel();
+    _isDisposed = true;
+    gameTimer?.cancel();
+    previewTimer?.cancel();
     confettiController.dispose();
     super.dispose();
   }
@@ -69,7 +71,9 @@ class _GameScreenState extends State<GameScreen> {
   void startPreview() {
     // Show all cards for 3 seconds
     previewTimer = Timer(const Duration(seconds: 3), () {
-      setState(() {
+      if (_isDisposed) return;
+
+      _safeSetState(() {
         isPreviewMode = false;
         // Flip all cards back
         for (var card in cards) {
@@ -82,8 +86,13 @@ class _GameScreenState extends State<GameScreen> {
 
   void startTimer() {
     gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_isDisposed) {
+        timer.cancel();
+        return;
+      }
+
       if (!isGameOver && !isPreviewMode) {
-        setState(() {
+        _safeSetState(() {
           timeElapsed++;
         });
 
@@ -95,6 +104,12 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
+  void _safeSetState(VoidCallback callback) {
+    if (!_isDisposed && mounted) {
+      setState(callback);
+    }
+  }
+
   void onCardTap(int index) {
     if (isPreviewMode || isGameOver ||
         cards[index].isFlipped ||
@@ -103,7 +118,7 @@ class _GameScreenState extends State<GameScreen> {
       return;
     }
 
-    setState(() {
+    _safeSetState(() {
       cards[index].isFlipped = true;
 
       if (firstSelectedIndex == null) {
@@ -122,12 +137,13 @@ class _GameScreenState extends State<GameScreen> {
 
     if (firstCard.imagePath == secondCard.imagePath) {
       // Match found
-      setState(() {
+      _safeSetState(() {
         firstCard.isMatched = true;
         secondCard.isMatched = true;
         matches++;
       });
 
+      // Check if level completed
       if (matches == widget.level.totalPairs) {
         calculateStars();
         gameOver(true);
@@ -135,19 +151,29 @@ class _GameScreenState extends State<GameScreen> {
 
       resetSelection();
     } else {
-      // No match
+      // No match - flip back after delay
       Future.delayed(const Duration(milliseconds: 1000), () {
-        setState(() {
+        if (_isDisposed) return;
+
+        _safeSetState(() {
           firstCard.isFlipped = false;
           secondCard.isFlipped = false;
           resetSelection();
         });
       });
     }
+
+    // 🎯 MOVES LIMIT CHECK - Game over if exceeds max moves
+    if (moves >= widget.level.maxMoves && matches < widget.level.totalPairs) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (!_isDisposed) {
+          gameOver(false);
+        }
+      });
+    }
   }
 
   void calculateStars() {
-    // Calculate stars based on performance
     double performanceScore = 0;
 
     // Time performance (50% weight)
@@ -175,80 +201,81 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Future<void> saveLevelProgress() async {
-    final prefs = await SharedPreferences.getInstance();
+    final dbHelper = DatabaseHelper();
 
-    // Get current saved progress
-    final String? savedData = prefs.getString('levels_progress');
-    Map<String, dynamic> levelsProgress = {};
-
-    if (savedData != null) {
-      levelsProgress = Map<String, dynamic>.from(json.decode(savedData));
-    }
-
-    // Update progress for this level
-    levelsProgress[widget.level.level.toString()] = {
-      'stars': starsEarned,
-      'completed': true,
-      'completedAt': DateTime.now().toIso8601String(),
-      'moves': moves,
-      'time': timeElapsed,
-    };
+    // Save current level progress
+    await dbHelper.saveLevelProgress(
+      level: widget.level.level,
+      stars: starsEarned,
+      completed: true,
+      unlocked: true,
+      moves: moves,
+      time: timeElapsed,
+      completedAt: DateTime.now().toIso8601String(),
+    );
 
     // Unlock next level
     final nextLevel = widget.level.level + 1;
     if (nextLevel <= 100) {
-      levelsProgress[nextLevel.toString()] = {
-        'stars': 0,
-        'completed': false,
-        'unlocked': true,
-      };
+      final nextLevelProgress = await dbHelper.getLevelProgress(nextLevel);
+      if (nextLevelProgress == null) {
+        await dbHelper.saveLevelProgress(
+          level: nextLevel,
+          stars: 0,
+          completed: false,
+          unlocked: true,
+        );
+      }
     }
-
-    // Save updated progress
-    await prefs.setString('levels_progress', json.encode(levelsProgress));
   }
 
   void gameOver(bool isWin) {
-    setState(() {
+    if (_isDisposed) return;
+
+    _safeSetState(() {
       isGameOver = true;
     });
-    gameTimer.cancel();
+    gameTimer?.cancel();
 
     if (isWin) {
       confettiController.play();
       saveLevelProgress().then((_) {
-        if (widget.onLevelComplete != null) {
+        if (!_isDisposed && widget.onLevelComplete != null) {
           widget.onLevelComplete!();
         }
       });
     }
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => GameResultDialog(
-        isWin: isWin,
-        level: widget.level,
-        moves: moves,
-        timeElapsed: timeElapsed,
-        stars: starsEarned,
-        onNextLevel: isWin ? () {
-          Navigator.pop(context);
-          navigateToNextLevel();
-        } : null,
-        onRetry: () {
-          Navigator.pop(context);
-          restartGame();
-        },
-        onLevelSelect: () {
-          Navigator.pop(context);
-          Navigator.pop(context);
-        },
-      ),
-    );
+    if (!_isDisposed && mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => GameResultDialog(
+          isWin: isWin,
+          level: widget.level,
+          moves: moves,
+          timeElapsed: timeElapsed,
+          stars: starsEarned,
+          onNextLevel: isWin ? () {
+            Navigator.pop(context);
+            navigateToNextLevel();
+          } : null,
+          onRetry: () {
+            Navigator.pop(context);
+            restartGame();
+          },
+          onLevelSelect: () {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
+        ),
+      );
+    }
   }
 
   void navigateToNextLevel() {
+    if (_isDisposed) return;
+
     final nextLevelNumber = widget.level.level + 1;
     if (nextLevelNumber <= 100) {
       final nextLevel = LevelGenerator.generateLevels().firstWhere(
@@ -268,24 +295,31 @@ class _GameScreenState extends State<GameScreen> {
       // All levels completed
       Navigator.pop(context);
       Navigator.pop(context);
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('🎉 Congratulations! 🎉'),
-          content: const Text('You have completed all 100 levels! You are a true Memory Master!'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
+      if (!_isDisposed && mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('🎉 Congratulations! 🎉'),
+            content: const Text('You have completed all 100 levels! You are a true Memory Master!'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
     }
   }
 
   void restartGame() {
-    setState(() {
+    if (_isDisposed) return;
+
+    gameTimer?.cancel();
+    previewTimer?.cancel();
+
+    _safeSetState(() {
       initializeGame();
       moves = 0;
       matches = 0;
@@ -340,7 +374,7 @@ class _GameScreenState extends State<GameScreen> {
                     margin: const EdgeInsets.symmetric(vertical: 10),
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.1),
+                      color: Colors.orange.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.orange),
                     ),
@@ -384,10 +418,20 @@ class _GameScreenState extends State<GameScreen> {
               ],
             ),
           ),
-
+          ConfettiWidget(
+            confettiController: confettiController,
+            blastDirectionality: BlastDirectionality.explosive,
+            shouldLoop: false,
+            colors: const [
+              Colors.green,
+              Colors.blue,
+              Colors.pink,
+              Colors.orange,
+              Colors.purple,
+            ],
+          ),
         ],
       ),
     );
   }
 }
-
