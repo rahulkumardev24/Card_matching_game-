@@ -106,9 +106,10 @@ class AppTextStyle {
     FontWeight? weight,
     double? height,
     double? letterSpacing,
+    String fontFamily = "primary"
   }) {
     return TextStyle(
-      fontFamily: 'primary',
+      fontFamily: fontFamily,
       fontSize: _responsiveSize(size ?? 16),
       color: color ?? Colors.white70,
       fontWeight: weight ?? FontWeight.normal,

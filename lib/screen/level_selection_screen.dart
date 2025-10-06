@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'package:card_match_memory/helper/app_text_styles.dart';
 import 'package:card_match_memory/widgets/navigation_button.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../utils/level_generator.dart';
 import '../../widgets/level_card.dart';
 import '../data/database_helper.dart';
@@ -182,8 +180,8 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColor.primaryColor.withOpacity(0.9),
-              AppColor.secondaryColor.withOpacity(0.9),
+              AppColor.primaryColor.withValues(alpha: 0.9),
+              AppColor.secondaryColor.withValues(alpha: 0.9),
             ],
           ),
         ),

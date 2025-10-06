@@ -91,7 +91,6 @@ class LevelAndStarCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-
           ClayContainer(
             width: 30.sp,
             height: 30.sp,
@@ -102,7 +101,6 @@ class LevelAndStarCard extends StatelessWidget {
             curveType: CurveType.convex,
             depth: 80,
 
-
             child: Icon(icon, color: Colors.white, size: 24.sp),
           ),
 
@@ -112,7 +110,7 @@ class LevelAndStarCard extends StatelessWidget {
           Text(
             title,
             style: AppTextStyle.subtitleMedium(
-              color:AppColor.darkText,
+              color: AppColor.darkText,
               weight: FontWeight.w600,
               letterSpacing: 1.0,
             ),
@@ -122,7 +120,7 @@ class LevelAndStarCard extends StatelessWidget {
 
           // Progress numbers
           ClayContainer(
-            width: 100,
+            width: 33.w,
             borderRadius: 20,
             depth: 70,
             surfaceColor: AppColor.secondaryColor,
@@ -145,7 +143,7 @@ class LevelAndStarCard extends StatelessWidget {
             ),
           ),
 
-        SizedBox(height: 2.h),
+          SizedBox(height: 2.h),
 
           Container(
             width: 30.w,

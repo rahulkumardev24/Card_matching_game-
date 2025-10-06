@@ -14,7 +14,9 @@ class NavigationButton extends StatelessWidget {
       child: ClayContainer(
         borderRadius: 200,
         color: AppColor.secondaryColor,
-        spread: 3,
+        spread: 2,
+        emboss: true,
+        curveType: CurveType.convex,
         depth: 50,
         child: Icon(Icons.backspace_outlined, color: AppColor.lightText),
       ),

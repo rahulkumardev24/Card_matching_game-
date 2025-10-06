@@ -34,11 +34,13 @@ class LevelCard extends StatelessWidget {
           children: [
             /// Main Clay Container
             ClayContainer(
-              borderRadius: 20,
-              depth: 20,
+              borderRadius: 2.h,
+              depth: 30,
               surfaceColor: AppColor.primaryColor,
-              parentColor: isUnlocked ? AppColor.primaryColor : Colors.black.withValues(alpha: 0.80),
-              spread: 3,
+              parentColor: isUnlocked
+                  ? AppColor.primaryColor
+                  : Colors.black.withValues(alpha: 0.80),
+              spread: 2,
               curveType: CurveType.concave,
               child: Stack(
                 alignment: Alignment.center,
@@ -53,7 +55,7 @@ class LevelCard extends StatelessWidget {
                         width: 28.sp,
                         height: 28.sp,
                         borderRadius: 100,
-                        spread: 3,
+                        spread: 2,
                         color: AppColor.primaryColor,
                         curveType: CurveType.concave,
 
@@ -74,7 +76,7 @@ class LevelCard extends StatelessWidget {
 
                       /// ---- Difficulty Badge ---- ///
                       ClayContainer(
-                        borderRadius: 20,
+                        borderRadius: 2.h,
                         depth: isUnlocked ? 20 : 10,
                         surfaceColor: isUnlocked
                             ? AppColor.primaryColor
@@ -125,11 +127,11 @@ class LevelCard extends StatelessWidget {
                     ClayContainer(
                       width: double.infinity,
                       height: double.infinity,
-                      borderRadius: 20,
+                      borderRadius: 2.h,
                       depth: 40,
                       parentColor: Colors.black.withValues(alpha: 0.70),
                       surfaceColor: Colors.black.withValues(alpha: 0.85),
-                      spread: 1,
+                      spread: 0,
                       curveType: CurveType.concave,
 
                       child: Stack(
@@ -138,7 +140,7 @@ class LevelCard extends StatelessWidget {
                           /// Shiny effect
                           Positioned(
                             top: -10.sp,
-                            right:-20.sp,
+                            right: -20.sp,
                             child: Container(
                               width: 40.sp,
                               height: 40.sp,

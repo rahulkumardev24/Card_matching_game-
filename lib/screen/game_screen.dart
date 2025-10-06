@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'package:card_match_memory/helper/app_color.dart';
+import 'package:card_match_memory/helper/app_text_styles.dart';
 import 'package:card_match_memory/widgets/game_box_card.dart';
+import 'package:card_match_memory/widgets/navigation_button.dart';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import '../../utils/level_generator.dart';
 import '../../widgets/game_stats.dart';
 import '../data/database_helper.dart';
@@ -13,11 +17,7 @@ class GameScreen extends StatefulWidget {
   final GameLevel level;
   final VoidCallback? onLevelComplete;
 
-  const GameScreen({
-    super.key,
-    required this.level,
-    this.onLevelComplete,
-  });
+  const GameScreen({super.key, required this.level, this.onLevelComplete});
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -42,7 +42,9 @@ class _GameScreenState extends State<GameScreen> {
   void initState() {
     super.initState();
     initializeGame();
-    confettiController = ConfettiController(duration: const Duration(seconds: 5));
+    confettiController = ConfettiController(
+      duration: const Duration(seconds: 5),
+    );
     startPreview();
   }
 
@@ -56,26 +58,38 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void initializeGame() {
-    List<String> cardImages = LevelGenerator.generateCardImages(widget.level.totalPairs);
+    List<String> cardImages = LevelGenerator.generateCardImages(
+      widget.level.totalPairs,
+    );
 
     cards = List.generate(
       cardImages.length,
-          (index) => CardItem(
-        id: index,
-        imagePath: cardImages[index],
-        isFlipped: true,
-      ),
+      (index) =>
+          CardItem(id: index, imagePath: cardImages[index], isFlipped: true),
     );
   }
 
+  int getPreviewDuration() {
+    if (widget.level.level >= 1 && widget.level.level <= 10) {
+      return 800;
+    } else if (widget.level.level >= 11 && widget.level.level <= 20) {
+      return 1300;
+    } else if (widget.level.level >= 21 && widget.level.level <= 50) {
+      return 1800;
+    } else if (widget.level.level >= 51 && widget.level.level <= 80) {
+      return 2300;
+    } else if (widget.level.level >= 81 && widget.level.level <= 100) {
+      return 2500;
+    }
+    return 3000;
+  }
+
   void startPreview() {
-    // Show all cards for 3 seconds
-    previewTimer = Timer(const Duration(seconds: 3), () {
+    previewTimer = Timer(Duration(milliseconds: getPreviewDuration()), () {
       if (_isDisposed) return;
 
       _safeSetState(() {
         isPreviewMode = false;
-        // Flip all cards back
         for (var card in cards) {
           card.isFlipped = false;
         }
@@ -111,7 +125,8 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void onCardTap(int index) {
-    if (isPreviewMode || isGameOver ||
+    if (isPreviewMode ||
+        isGameOver ||
         cards[index].isFlipped ||
         cards[index].isMatched ||
         (firstSelectedIndex != null && secondSelectedIndex != null)) {
@@ -177,7 +192,8 @@ class _GameScreenState extends State<GameScreen> {
     double performanceScore = 0;
 
     // Time performance (50% weight)
-    double timeScore = (widget.level.timeLimit - timeElapsed) / widget.level.timeLimit;
+    double timeScore =
+        (widget.level.timeLimit - timeElapsed) / widget.level.timeLimit;
     timeScore = timeScore.clamp(0.0, 1.0);
 
     // Moves performance (50% weight)
@@ -256,10 +272,12 @@ class _GameScreenState extends State<GameScreen> {
           moves: moves,
           timeElapsed: timeElapsed,
           stars: starsEarned,
-          onNextLevel: isWin ? () {
-            Navigator.pop(context);
-            navigateToNextLevel();
-          } : null,
+          onNextLevel: isWin
+              ? () {
+                  Navigator.pop(context);
+                  navigateToNextLevel();
+                }
+              : null,
           onRetry: () {
             Navigator.pop(context);
             restartGame();
@@ -279,7 +297,7 @@ class _GameScreenState extends State<GameScreen> {
     final nextLevelNumber = widget.level.level + 1;
     if (nextLevelNumber <= 100) {
       final nextLevel = LevelGenerator.generateLevels().firstWhere(
-            (level) => level.level == nextLevelNumber,
+        (level) => level.level == nextLevelNumber,
       );
 
       Navigator.pushReplacement(
@@ -300,7 +318,9 @@ class _GameScreenState extends State<GameScreen> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('🎉 Congratulations! 🎉'),
-            content: const Text('You have completed all 100 levels! You are a true Memory Master!'),
+            content: const Text(
+              'You have completed all 100 levels! You are a true Memory Master!',
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -332,103 +352,113 @@ class _GameScreenState extends State<GameScreen> {
     startPreview();
   }
 
+  // Calculate optimal grid columns based on level and screen size
+  int calculateGridColumns() {
+    // For lower levels (1-20), use fixed grid size
+    if (widget.level.level <= 20) {
+      return widget.level.gridSize;
+    }
+
+    // For higher levels, calculate based on card count for better sizing
+    final totalCards = widget.level.totalPairs * 2;
+
+    // Calculate approximate columns to maintain reasonable card size
+    if (totalCards <= 12) return 3;
+    if (totalCards <= 20) return 4;
+    if (totalCards <= 30) return 5;
+    if (totalCards <= 42) return 6;
+    if (totalCards <= 56) return 7;
+    return 8; // Maximum columns for very high levels
+  }
+
   @override
   Widget build(BuildContext context) {
+    final gridColumns = calculateGridColumns();
     return Scaffold(
       /// ------- App bar ------ ///
       appBar: AppBar(
-        title: Text('Level ${widget.level.level} - ${widget.level.difficulty}'),
+        leading: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: NavigationButton(
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+        ),
+        backgroundColor: AppColor.secondaryColor,
+        title: Text(
+          'Level ${widget.level.level} - ${widget.level.difficulty}',
+          style: AppTextStyle.titleSmall(
+            color: Colors.white,
+            fontFamily: "secondary",
+          ),
+        ),
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: AppColor.lightText),
             onPressed: restartGame,
           ),
         ],
       ),
-      body: Stack(
+      backgroundColor: AppColor.primaryColor,
+      body: Column(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.blue.shade50,
-                  Colors.purple.shade50,
+          /// Game Stats
+          GameStatsWidget(
+            moves: moves,
+            matches: matches,
+            timeElapsed: timeElapsed,
+            level: widget.level,
+          ),
+
+          /*    // Preview Indicator
+          if (isPreviewMode) ...[
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.orange),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.visibility, color: Colors.orange, size: 16),
+                  const SizedBox(width: 5),
+                  Text(
+                    'Memorize the cards!',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
-            child: Column(
-              children: [
-                /// Game Stats
-                GameStatsWidget(
-                  moves: moves,
-                  matches: matches,
-                  timeElapsed: timeElapsed,
-                  level: widget.level,
-                ),
+          ],*/
 
-                // Preview Indicator
-                if (isPreviewMode) ...[
-                  Container(
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.orange),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.visibility, color: Colors.orange, size: 16),
-                        const SizedBox(width: 5),
-                        Text(
-                          'Memorize the cards!',
-                          style: TextStyle(
-                            color: Colors.orange,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-
-                /// ------- Cards Grid ---- ///
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: widget.level.gridSize,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                        childAspectRatio: 0.8,
-                      ),
-                      itemCount: cards.length,
-                      itemBuilder: (context, index) => GameBoxCard(
-                        card: cards[index],
-                        onTap: () => onCardTap(index),
-                        isPreviewMode: isPreviewMode,
-                      ),
-                    ),
-                  ),
+          /// ------- Cards Grid ---- ///
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(6.0).copyWith(top: 2.h),
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: gridColumns,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 0.8,
                 ),
-              ],
+                itemCount: cards.length,
+                itemBuilder: (context, index) => GameBoxCard(
+                  card: cards[index],
+                  onTap: () => onCardTap(index),
+                  isPreviewMode: isPreviewMode,
+                  gridSize: gridColumns,
+                ),
+              ),
             ),
-          ),
-          ConfettiWidget(
-            confettiController: confettiController,
-            blastDirectionality: BlastDirectionality.explosive,
-            shouldLoop: false,
-            colors: const [
-              Colors.green,
-              Colors.blue,
-              Colors.pink,
-              Colors.orange,
-              Colors.purple,
-            ],
           ),
         ],
       ),

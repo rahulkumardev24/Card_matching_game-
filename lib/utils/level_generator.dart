@@ -62,7 +62,7 @@ class LevelGenerator {
     for (int i = 0; i < pairs; i++) {
       String emoji = AppConstant.emojis[i % AppConstant.emojis.length];
       images.add(emoji);
-      images.add(emoji); // Add pair
+      images.add(emoji);
     }
 
     images.shuffle();
