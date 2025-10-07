@@ -1,7 +1,9 @@
 import 'package:card_match_memory/helper/app_color.dart';
+import 'package:card_match_memory/helper/app_text_styles.dart';
 import 'package:card_match_memory/screen/setting_screen.dart';
 import 'package:card_match_memory/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
+import 'package:responsive_sizer/responsive_sizer.dart';
 import '../helper/responsive_helper.dart';
 import 'level_selection_screen.dart';
 
@@ -45,32 +47,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: ResponsiveHelper.screenHeight(context) * 0.2,
                     ),
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: 2.h),
                     Text(
-                      'Memorify',
-                      style: TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
+                      'Memory Challenge',
+                      style: AppTextStyle.titleMedium(
                         color: Colors.white,
-                        fontFamily: 'Poppins',
+                        fontFamily: 'secondary',
                       ),
                     ),
                     Text(
-                      'Brain Challenge',
-                      style: TextStyle(
-                        fontSize: 24,
-                        color: Colors.white.withOpacity(0.9),
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      'Train Your Memory • Improve Concentration',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.8),
-                      ),
-                      textAlign: TextAlign.center,
+                      'Train Your Memory ',
+                      style: AppTextStyle.subtitle(color: AppColor.darkText),
                     ),
                     const Spacer(),
                   ],
@@ -89,13 +76,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     topLeft: Radius.circular(40),
                     topRight: Radius.circular(40),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -106,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                const LevelSelectionScreen(), // No parameters
+                                const LevelSelectionScreen(),
                           ),
                         );
                       },

@@ -1,10 +1,25 @@
-import 'package:card_match_memory/screen/home_screen.dart';
-import 'package:card_match_memory/screen/level_selection_screen.dart';
+import 'package:card_match_memory/provider/setting_provider.dart';
+import 'package:card_match_memory/screen/splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+
+  /// ------ Set Device Orientations ------- ///
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  runApp(
+      MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SettingProvider()),
+      ],
+      child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -15,9 +30,9 @@ class MyApp extends StatelessWidget {
     return ResponsiveSizer(
       builder: (context, orientation, screenType) {
         return MaterialApp(
-          title: 'Memorify: Brain Challenge',
+          title: 'Card Matching : Memory Game',
           debugShowCheckedModeBanner: false,
-          home: LevelSelectionScreen(),
+          home: SplashScreen(),
         );
       },
     );

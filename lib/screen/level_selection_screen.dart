@@ -1,4 +1,5 @@
 import 'package:card_match_memory/helper/app_text_styles.dart';
+import 'package:card_match_memory/helper/responsive_helper.dart';
 import 'package:card_match_memory/widgets/navigation_button.dart';
 import 'package:flutter/material.dart';
 import '../../utils/level_generator.dart';
@@ -27,7 +28,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     loadLevelsProgress();
   }
 
-  // In LevelSelectionScreen class
+  /// In LevelSelectionScreen class
   Future<void> loadLevelsProgress() async {
     final dbHelper = DatabaseHelper();
     final progress = await dbHelper.getAllLevelsProgress();
@@ -44,11 +45,11 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     });
   }
 
-// 🔧 DEBUG METHOD: Unlock all levels
+  /// 🔧 DEBUG METHOD: Unlock all levels
   Future<void> unlockAllLevels() async {
     final dbHelper = DatabaseHelper();
     await dbHelper.unlockAllLevels();
-    loadLevelsProgress(); // Refresh the state
+    loadLevelsProgress();
 
     // Show confirmation
     ScaffoldMessenger.of(context).showSnackBar(
@@ -62,7 +63,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     );
   }
 
-// 🔧 DEBUG METHOD: Reset all progress
+  // 🔧 DEBUG METHOD: Reset all progress
   Future<void> resetAllProgress() async {
     final dbHelper = DatabaseHelper();
     await dbHelper.resetAllProgress();
@@ -75,7 +76,6 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
       ),
     );
   }
-
 
   bool isLevelUnlocked(int levelNumber) {
     final levelData = levelsProgress[levelNumber.toString()];
@@ -121,6 +121,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     final completedLevels = getCompletedLevelsCount();
     final totalStars = getTotalStars();
     final maxStars = getMaxStars();
+    final isTablet = ResponsiveHelper.isTablet(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -139,7 +140,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
         centerTitle: true,
         backgroundColor: AppColor.secondaryColor,
         actions: [
-          // Debug menu for testing
+          /* // Debug menu for testing
           PopupMenuButton<String>(
             icon: Icon(Icons.bug_report, color: Colors.white),
             onSelected: (value) {
@@ -171,7 +172,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
                 ),
               ),
             ],
-          ),
+          ),*/
         ],
       ),
       body: Container(
@@ -196,8 +197,8 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
             Expanded(
               child: GridView.builder(
                 padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isTablet ? 4 : 3,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                   childAspectRatio: 0.8,

@@ -92,19 +92,19 @@ class LevelAndStarCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ClayContainer(
-            width: 30.sp,
-            height: 30.sp,
+            width: 28.sp,
+            height: 28.sp,
             borderRadius: 200,
             spread: 2,
             color: color,
             parentColor: Colors.black,
             curveType: CurveType.convex,
-            depth: 80,
+            depth: 70,
 
             child: Icon(icon, color: Colors.white, size: 24.sp),
           ),
 
-          SizedBox(height: 12.sp),
+          SizedBox(height: 1.h),
 
           // Title
           Text(
@@ -135,7 +135,6 @@ class LevelAndStarCard extends StatelessWidget {
                   '$value/$total',
                   style: AppTextStyle.titleSmall(
                     color: Colors.white,
-                    size: 18,
                     weight: FontWeight.w700,
                   ),
                 ),
@@ -146,7 +145,7 @@ class LevelAndStarCard extends StatelessWidget {
           SizedBox(height: 2.h),
 
           Container(
-            width: 30.w,
+            width: 33.w,
             height: 12.sp,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
@@ -161,32 +160,14 @@ class LevelAndStarCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: gradient,
                     borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withValues(alpha: 0.5),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+
                   ),
                 ),
 
-                // Progress percentage text
-                Positioned(
-                  right: 8,
-                  top: -12.sp,
-                  child: Text(
-                    '${(progress * 100).toInt()}%',
-                    style: AppTextStyle.titleSmall(
-                      color: Colors.white,
-                      size: 10,
-                      weight: FontWeight.w700,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
+          SizedBox(height: 1.h),
         ],
       ),
     );
