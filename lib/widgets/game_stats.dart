@@ -84,8 +84,8 @@ class GameStatsWidget extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             SizedBox(
-              width: 60.px,
-              height: 60.px,
+              width: 80.px,
+              height: 80.px,
               child: CircularProgressIndicator(
                 value: progress,
                 strokeWidth: 8.px,
@@ -131,7 +131,6 @@ class GameStatsWidget extends StatelessWidget {
         /// ----- Label-------- ///
         ClayContainer(
           width: 20.w,
-          height: 24.px,
           borderRadius: 10,
           depth: 70,
           surfaceColor: AppColor.secondaryColor,
@@ -139,9 +138,12 @@ class GameStatsWidget extends StatelessWidget {
           spread: 1,
           curveType: CurveType.concave,
           child: Center(
-            child: Text(
-              label,
-              style: AppTextStyle.subtitleMedium(color: AppColor.lightText),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2.0),
+              child: Text(
+                label,
+                style: AppTextStyle.subtitleMedium(color: Colors.white , weight: FontWeight.bold),
+              ),
             ),
           ),
         ),

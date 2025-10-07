@@ -1,5 +1,6 @@
 import 'package:card_match_memory/screen/home_screen.dart';
 import 'package:card_match_memory/screen/level_selection_screen.dart';
+import 'package:card_match_memory/screen/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'Memorify: Brain Challenge',
           debugShowCheckedModeBanner: false,
-          home: LevelSelectionScreen(),
+          home: SplashScreen(onAnimationComplete: () {  },),
         );
       },
     );

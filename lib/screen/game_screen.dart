@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:card_match_memory/helper/app_color.dart';
 import 'package:card_match_memory/helper/app_text_styles.dart';
+import 'package:card_match_memory/helper/responsive_helper.dart';
 import 'package:card_match_memory/widgets/game_box_card.dart';
 import 'package:card_match_memory/widgets/navigation_button.dart';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import '../../utils/level_generator.dart';
 import '../../widgets/game_stats.dart';
@@ -353,7 +355,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   // Calculate optimal grid columns based on level and screen size
-  int calculateGridColumns() {
+  /*  int calculateGridColumns() {
     // For lower levels (1-20), use fixed grid size
     if (widget.level.level <= 20) {
       return widget.level.gridSize;
@@ -369,11 +371,118 @@ class _GameScreenState extends State<GameScreen> {
     if (totalCards <= 42) return 6;
     if (totalCards <= 56) return 7;
     return 8; // Maximum columns for very high levels
+  }*/
+
+  void previewSnackMessage(BuildContext context) {
+    OverlayEntry overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: 15.h,
+        left: 1.h,
+        right: 1.h,
+        child: Animate(
+          effects: [
+            SlideEffect(
+              duration: 1200.milliseconds,
+              delay: 100.ms,
+              curve: Curves.easeOutExpo,
+            ),
+          ],
+
+          child: Material(
+            color: Colors.grey.shade900,
+            borderRadius: BorderRadiusGeometry.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                margin: EdgeInsets.symmetric(vertical: 1.h),
+                padding: EdgeInsets.all(1.h),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.orange),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.visibility, color: Colors.orange, size: 3.h),
+                    SizedBox(width: 1.h),
+                    Text(
+                      'Memorize the cards!',
+                      style: AppTextStyle.subtitleMedium(color: Colors.orange),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Insert into the overlay
+    Overlay.of(context).insert(overlayEntry);
+
+    // Remove after delay
+    Future.delayed(
+      const Duration(seconds: 2),
+    ).then((_) => overlayEntry.remove());
+  }
+
+  // Calculate optimal grid columns based on level and screen size
+  int calculateGridColumns() {
+    final isTablet = ResponsiveHelper.isTablet(context);
+    // For tablets, use more columns
+    if (isTablet) {
+      // Tablet
+      if (widget.level.level <= 10) {
+        return widget.level.gridSize + 1;
+      } else if (widget.level.level <= 20) {
+        return widget.level.gridSize;
+      } else {
+        final totalCards = widget.level.totalPairs * 2;
+        if (totalCards <= 12) return 4;
+        if (totalCards <= 20) return 5;
+        if (totalCards <= 30) return 6;
+        if (totalCards <= 42) return 7;
+        if (totalCards <= 56) return 8;
+        return 9;
+      }
+    } else {
+      // Mobile
+      if (widget.level.level <= 20) {
+        return widget.level.gridSize;
+      }
+
+      final totalCards = widget.level.totalPairs * 2;
+      if (totalCards <= 12) return 3;
+      if (totalCards <= 20) return 4;
+      if (totalCards <= 30) return 5;
+      if (totalCards <= 42) return 6;
+      if (totalCards <= 56) return 7;
+      if (totalCards <= 64) return 8;
+      return 9;
+    }
+  }
+
+  // Calculate dynamic child aspect ratio based on device and level
+  double calculateChildAspectRatio() {
+    final isTablet = ResponsiveHelper.isTablet(context);
+    if (isTablet) {
+      return 1;
+    } else {
+      /// Mobile
+      return 0.8;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final width = ResponsiveHelper.screenWidth(context);
+
     final gridColumns = calculateGridColumns();
+    final childAspectRatio = calculateChildAspectRatio();
     return Scaffold(
       /// ------- App bar ------ ///
       appBar: AppBar(
@@ -397,7 +506,10 @@ class _GameScreenState extends State<GameScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.refresh, color: AppColor.lightText),
-            onPressed: restartGame,
+            onPressed: () {
+              restartGame();
+              previewSnackMessage(context);
+            },
           ),
         ],
       ),
@@ -412,33 +524,6 @@ class _GameScreenState extends State<GameScreen> {
             level: widget.level,
           ),
 
-          /*    // Preview Indicator
-          if (isPreviewMode) ...[
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: 10),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.orange),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.visibility, color: Colors.orange, size: 16),
-                  const SizedBox(width: 5),
-                  Text(
-                    'Memorize the cards!',
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],*/
-
           /// ------- Cards Grid ---- ///
           Expanded(
             child: Padding(
@@ -448,7 +533,7 @@ class _GameScreenState extends State<GameScreen> {
                   crossAxisCount: gridColumns,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
-                  childAspectRatio: 0.8,
+                  childAspectRatio: childAspectRatio,
                 ),
                 itemCount: cards.length,
                 itemBuilder: (context, index) => GameBoxCard(
@@ -456,6 +541,7 @@ class _GameScreenState extends State<GameScreen> {
                   onTap: () => onCardTap(index),
                   isPreviewMode: isPreviewMode,
                   gridSize: gridColumns,
+                  screenWidth: width,
                 ),
               ),
             ),

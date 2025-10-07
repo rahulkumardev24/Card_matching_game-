@@ -1,6 +1,8 @@
 import 'package:card_match_memory/helper/app_color.dart';
+import 'package:card_match_memory/helper/responsive_helper.dart';
 import 'package:clay_containers/clay_containers.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import '../models/card_item.dart';
 
@@ -9,6 +11,7 @@ class GameBoxCard extends StatelessWidget {
   final VoidCallback onTap;
   final bool isPreviewMode;
   final int? gridSize;
+  final double screenWidth;
 
   const GameBoxCard({
     super.key,
@@ -16,42 +19,44 @@ class GameBoxCard extends StatelessWidget {
     required this.onTap,
     this.isPreviewMode = false,
     this.gridSize,
+    required this.screenWidth,
   });
 
   double _calculateIconSize() {
-    if (gridSize == null) return 42.sp;
+    if (gridSize == null) return screenWidth > 600 ? 36.sp : 42.sp;
+
     if (gridSize! <= 3) {
-      return 28.sp;
+      return screenWidth > 600 ? 32.sp : 28.sp;
     } else if (gridSize! <= 4) {
-      return 24.sp; // Medium
+      return screenWidth > 600 ? 28.sp : 24.sp;
     } else if (gridSize! <= 5) {
-      return 20.sp; // Normal
+      return screenWidth > 600 ? 24.sp : 20.sp;
     } else if (gridSize! <= 6) {
-      return 25.sp;
+      return screenWidth > 600 ? 22.sp : 25.sp;
     } else {
-      return 20.sp;
+      return screenWidth > 600 ? 20.sp : 20.sp;
     }
   }
 
   double _calculateFontSize() {
-    if (gridSize == null) return 18.sp;
+    if (gridSize == null) return screenWidth > 600 ? 22.sp : 18.sp;
 
     if (gridSize! <= 3) {
-      return 32.sp;
+      return screenWidth > 600 ? 36.sp : 32.sp;
     } else if (gridSize! <= 4) {
-      return 28.sp;
+      return screenWidth > 600 ? 32.sp : 28.sp;
     } else if (gridSize! <= 5) {
-      return 24.sp;
+      return screenWidth > 600 ? 28.sp : 24.sp;
     } else if (gridSize! <= 6) {
-      return 20.sp;
+      return screenWidth > 600 ? 24.sp : 20.sp;
     } else {
-      return 30.sp;
+      return screenWidth > 600 ? 26.sp : 30.sp;
     }
   }
 
   // Calculate border radius responsively
   double _calculateBorderRadius() {
-    return 10.px;
+    return screenWidth > 600 ? 12.px : 10.px;
   }
 
   @override
@@ -59,6 +64,7 @@ class GameBoxCard extends StatelessWidget {
     final iconSize = _calculateIconSize();
     final fontSize = _calculateFontSize();
     final borderRadius = _calculateBorderRadius();
+
     return GestureDetector(
       onTap: isPreviewMode ? null : onTap,
       child: ClayContainer(
@@ -73,7 +79,8 @@ class GameBoxCard extends StatelessWidget {
             color: card.isFlipped || card.isMatched
                 ? Colors.white
                 : AppColor.primaryColor,
-            borderRadius: BorderRadius.circular(borderRadius)),
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
           child: Center(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),

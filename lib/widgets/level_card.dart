@@ -94,6 +94,7 @@ class LevelCard extends StatelessWidget {
                             level.difficulty.toUpperCase(),
                             style: AppTextStyle.subtitleSmall(
                               color: AppColor.darkText,
+                              weight: FontWeight.bold
                             ),
                           ),
                         ),

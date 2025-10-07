@@ -1,4 +1,5 @@
 import 'package:card_match_memory/helper/app_text_styles.dart';
+import 'package:card_match_memory/helper/responsive_helper.dart';
 import 'package:card_match_memory/widgets/navigation_button.dart';
 import 'package:flutter/material.dart';
 import '../../utils/level_generator.dart';
@@ -44,7 +45,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     });
   }
 
-// 🔧 DEBUG METHOD: Unlock all levels
+  // 🔧 DEBUG METHOD: Unlock all levels
   Future<void> unlockAllLevels() async {
     final dbHelper = DatabaseHelper();
     await dbHelper.unlockAllLevels();
@@ -62,7 +63,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     );
   }
 
-// 🔧 DEBUG METHOD: Reset all progress
+  // 🔧 DEBUG METHOD: Reset all progress
   Future<void> resetAllProgress() async {
     final dbHelper = DatabaseHelper();
     await dbHelper.resetAllProgress();
@@ -75,7 +76,6 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
       ),
     );
   }
-
 
   bool isLevelUnlocked(int levelNumber) {
     final levelData = levelsProgress[levelNumber.toString()];
@@ -121,6 +121,7 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     final completedLevels = getCompletedLevelsCount();
     final totalStars = getTotalStars();
     final maxStars = getMaxStars();
+    final isTablet = ResponsiveHelper.isTablet(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -196,8 +197,8 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
             Expanded(
               child: GridView.builder(
                 padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isTablet ? 4 : 3,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                   childAspectRatio: 0.8,
