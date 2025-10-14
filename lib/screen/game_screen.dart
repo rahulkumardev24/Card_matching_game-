@@ -5,7 +5,6 @@ import 'package:card_match_memory/helper/responsive_helper.dart';
 import 'package:card_match_memory/widgets/game_box_card.dart';
 import 'package:card_match_memory/widgets/navigation_button.dart';
 import 'package:flutter/material.dart';
-import 'package:confetti/confetti.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
@@ -38,19 +37,13 @@ class _GameScreenState extends State<GameScreen> {
   bool isPreviewMode = true;
   Timer? gameTimer;
   Timer? previewTimer;
-  late ConfettiController confettiController;
   int starsEarned = 0;
   bool _isDisposed = false;
-
-
 
   @override
   void initState() {
     super.initState();
     initializeGame();
-    confettiController = ConfettiController(
-      duration: const Duration(seconds: 5),
-    );
     startPreview();
   }
 
@@ -59,7 +52,6 @@ class _GameScreenState extends State<GameScreen> {
     _isDisposed = true;
     gameTimer?.cancel();
     previewTimer?.cancel();
-    confettiController.dispose();
     super.dispose();
   }
 
@@ -139,9 +131,12 @@ class _GameScreenState extends State<GameScreen> {
       return;
     }
 
-    final settingProvider = Provider.of<SettingProvider>(context, listen: false);
-    settingProvider.playTapSound();
-
+    final settingProvider = Provider.of<SettingProvider>(
+      context,
+      listen: false,
+    );
+    settingProvider.playSound(soundPath: "audio/flip.mp3");
+    settingProvider.playVibration();
 
     _safeSetState(() {
       cards[index].isFlipped = true;
@@ -154,8 +149,6 @@ class _GameScreenState extends State<GameScreen> {
         checkForMatch();
       }
     });
-
-
   }
 
   void checkForMatch() {
@@ -266,12 +259,23 @@ class _GameScreenState extends State<GameScreen> {
     gameTimer?.cancel();
 
     if (isWin) {
-      confettiController.play();
       saveLevelProgress().then((_) {
         if (!_isDisposed && widget.onLevelComplete != null) {
           widget.onLevelComplete!();
         }
       });
+
+      final settingProvider = Provider.of<SettingProvider>(
+        context,
+        listen: false,
+      );
+      settingProvider.playSound(soundPath: "audio/win.mp3");
+    } else {
+      final settingProvider = Provider.of<SettingProvider>(
+        context,
+        listen: false,
+      );
+      settingProvider.playSound(soundPath: "audio/fail.mp3");
     }
 
     if (!_isDisposed && mounted) {

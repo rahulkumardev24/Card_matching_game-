@@ -46,9 +46,11 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               trailing: Switch(
-                value: true,
+                value: settingProvider.isVibrationOn,
                 activeTrackColor: AppColor.primaryColor,
-                onChanged: (value) {},
+                onChanged: (value) {
+                  settingProvider.toggleVibration();
+                },
               ),
             ),
           ),

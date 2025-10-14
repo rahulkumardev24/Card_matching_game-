@@ -1,5 +1,7 @@
 import 'package:card_match_memory/helper/app_text_styles.dart';
+import 'package:card_match_memory/helper/responsive_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import '../helper/app_color.dart';
 import '../models/game_models.dart';
@@ -29,34 +31,43 @@ class GameResultDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final height = ResponsiveHelper.screenHeight(context);
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         padding: EdgeInsets.all(1.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            // Show different icon based on win or lose
-            _buildIcon(),
+            if(isWin)
+            Lottie.asset("assets/animation/win.json" , height: height * 0.4 ,  fit: BoxFit.cover ),
 
-            const SizedBox(height: 16),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Show different icon based on win or lose
+                _buildIcon(),
 
-            // Show title message
-            _buildTitle(),
+                const SizedBox(height: 16),
 
-            const SizedBox(height: 16),
+                // Show title message
+                _buildTitle(),
 
-            // Show stars if player won
-            if (isWin) StarRating(stars: stars),
-            if (isWin) const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-            // Show game statistics
-            _buildStatsContainer(),
+                // Show stars if player won
+                if (isWin) StarRating(stars: stars),
+                if (isWin) const SizedBox(height: 16),
 
-            const SizedBox(height: 24),
+                // Show game statistics
+                _buildStatsContainer(),
 
-            /// Show action buttons
-            _buildButtons(),
+                const SizedBox(height: 24),
+
+                /// Show action buttons
+                _buildButtons(),
+              ],
+            ),
           ],
         ),
       ),
@@ -84,7 +95,6 @@ class GameResultDialog extends StatelessWidget {
       icon = Icons.error;
       color = Colors.grey;
     }
-
     return Icon(icon, size: 64, color: color);
   }
 
