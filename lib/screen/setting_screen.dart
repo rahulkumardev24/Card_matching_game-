@@ -17,10 +17,10 @@ class SettingsScreen extends StatelessWidget {
         children: [
           Card(
             child: ListTile(
-              leading: Icon(Icons.volume_up, color: AppColor.darkText),
+              leading: Icon(Icons.volume_up, color: AppColor.primaryColor),
               title: Text(
                 'Sound Effects',
-                style: AppTextStyle.subtitleSmall(
+                style: AppTextStyle.subtitleMedium(
                   color: AppColor.darkText,
                   weight: FontWeight.bold,
                 ),
@@ -37,10 +37,10 @@ class SettingsScreen extends StatelessWidget {
           ),
           Card(
             child: ListTile(
-              leading: Icon(Icons.vibration, color: AppColor.darkText),
+              leading: Icon(Icons.vibration, color: AppColor.primaryColor),
               title: Text(
                 'Vibration',
-                style: AppTextStyle.subtitleSmall(
+                style: AppTextStyle.subtitleMedium(
                   color: AppColor.darkText,
                   weight: FontWeight.bold,
                 ),
@@ -50,6 +50,7 @@ class SettingsScreen extends StatelessWidget {
                 activeTrackColor: AppColor.primaryColor,
                 onChanged: (value) {
                   settingProvider.toggleVibration();
+                  settingProvider.playVibration();
                 },
               ),
             ),
